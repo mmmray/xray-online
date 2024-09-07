@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <title>Xray is online!</title>
+
+    <meta charset="utf-8" />
+    <script src="wasm_exec.js"></script>
+    <script>
+      const go = new Go();
+      WebAssembly.instantiateStreaming(
+        fetch('main.wasm'),
+        go.importObject
+      ).then((result) => {
+        go.run(result.instance);
+      });
+    </script>
+
+    <style>
+      html, body, #box { height: 100%; padding: 0; margin: 0 }
+      #box { display: flex }
+      #config { width: 50% }
+      #right { padding: 10px; width: 50% }
+    </style>
+  </head>
+  <body>
+    <div id="box">
+      <textarea id="config">
+{
+    "inbounds": [
+        {
+            "listen": "127.0.0.1", // Fill in 0.0.0.0 to allow connections from LAN
+            "port": 10808, // local socks listening port
+            "protocol": "socks",
+            "settings": {
+                "udp": true
+            },
+            "sniffing": {
+                "enabled": true,
+                "destOverride": [
+                    "http",
+                    "tls"
+                ]
+            }
+        }
+    ],
+    "outbounds": [
+        {
+            "protocol": "vless",
+            "settings": {
+                "vnext": [
+                    {
+                        "address": "", // Address, domain name or IP of the server
+                        "port": 443, // Port, consistent with the server
+                        "users": [
+                            {
+                                "id": "", // User ID, consistent with the server
+                                "encryption": "none",
+                                "flow": "xtls-rprx-vision"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "streamSettings": {
+                "network": "tcp",
+                "security": "tls",
+                "tlsSettings": {
+                    "serverName": "", // SNI, if "address" is filled with the domain name of the server, it can be left blank. If "address" is filled with the IP of the server, fill in the domain name contained in the certificate of the server here
+                    "allowInsecure": false,
+                    "fingerprint": "chrome" // Used to configure the fingerprint of the specified TLS Client Hello, Xray will simulate the TLS fingerprint through the uTLS library, or generate it randomly
+                }
+            },
+            "tag": "proxy"
+        }
+    ]
+}
+      </textarea>
+      <div id="right">
+      Xray is online! | <a href="https://github.com/mmmray/xray-online">GitHub</a>
+      <hr>
+
+      <pre id="output">Start typing your xray config on the left.</pre>
+      </div>
+    </div>
+
+    <script>
+      let config = document.getElementById("config");
+      let output = document.getElementById("output");
+      config.onkeyup = (e) => {
+        output.innerHTML = XrayParseConfig(config.value) || "valid!";
+      };
+    </script>
+  </body>
+</html>
