@@ -2,15 +2,38 @@ package main
 
 import (
     "fmt"
+	"strings"
     "syscall/js"
 	"encoding/json"
 	"bytes"
+	"io"
+	_ "embed"
+	"io/ioutil"
 
 	"github.com/xtls/xray-core/infra/conf"
+	"github.com/xtls/xray-core/common/platform/filesystem"
+	"github.com/xtls/xray-core/common/errors"
 	json_reader "github.com/xtls/xray-core/infra/conf/json"
 )
 
+//go:embed geoip.dat
+var geoipRaw []byte
+//go:embed geosite.dat
+var geositeRaw []byte
+
 func main() {
+	filesystem.NewFileReader = func(path string) (io.ReadCloser, error) {
+		if strings.HasSuffix(path, "geoip.dat") {
+			return ioutil.NopCloser(bytes.NewReader(geoipRaw)), nil
+		}
+
+		if strings.HasSuffix(path, "geosite.dat") {
+			return ioutil.NopCloser(bytes.NewReader(geositeRaw)), nil
+		}
+
+		return nil, errors.New(path + " cannot be opened in the browser")
+	}
+
     js.Global().Set("XrayParseConfig", js.FuncOf(func(this js.Value, args []js.Value) any {
         if len(args) < 1 {
             fmt.Println("invalid number of args")
