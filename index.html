@@ -22,6 +22,8 @@
       #config { width: 50% }
       #right { padding: 10px; width: 50% }
       #output { text-wrap: wrap; word-break: break-all }
+      #output[data-status=ok] { color: green; }
+      #output[data-status=error] { color: red; }
     </style>
   </head>
   <body>
@@ -89,7 +91,19 @@
       let config = document.getElementById("config");
       let output = document.getElementById("output");
       config.onkeyup = (e) => {
-        output.innerHTML = XrayParseConfig(config.value) || "valid!";
+        if (!XrayParseConfig) {
+          output.dataset.status = "warn";
+          output.innerText = "Xray is still loading. Check the browser console?";
+        } else {
+          let value = XrayParseConfig(config.value);
+          if (value) {
+            output.dataset.status = "error";
+            output.innerText = value;
+          } else {
+            output.dataset.status = "ok";
+            output.innerText = "valid!";
+          }
+        }
       };
     </script>
   </body>
