@@ -33,6 +33,10 @@ func main() {
 			return err.Error()
 		}
 
+		if _, err := jsonConfig.Build(); err != nil {
+			return err.Error()
+		}
+
 		return nil
     }))
 
