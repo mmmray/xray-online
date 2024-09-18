@@ -5,20 +5,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Xray Config Validator</title>
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" />
-    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ace.js"></script>
     <script src="wasm_exec.js"></script>
     <script>
-      const go = new Go();
-      WebAssembly.instantiateStreaming(
-        fetch('main.wasm'),
-        go.importObject
-      ).then((result) => {
-        go.run(result.instance);
+      const isReady = new Promise((resolve) => {
+        window.onWasmInitialized = resolve;
       });
+
+      const go = new Go();
+
+      (async () => {
+        const result = await WebAssembly.instantiateStreaming(fetch('main.wasm'), go.importObject);
+        go.run(result.instance);
+        await isReady;
+        document.getElementById("version-info").innerText = `Xray version ${XrayGetVersion()}`;
+      })()
     </script>
     <style>
+      * {
+        box-sizing: border-box;
+      }
       html, body {
         height: 100%;
         padding: 0;
@@ -26,16 +32,17 @@
         background-color: #f8f9fa;
         display: flex;
         flex-direction: column;
+        font-family: system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue","Noto Sans","Liberation Sans",Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji";
       }
 
       .container {
+        width: 100%;
         flex: 1;
         display: flex;
         flex-direction: column;
         max-width: 800px;
         margin: 0 auto;
         padding: 20px;
-        box-sizing: border-box;
       }
 
       #editor {
@@ -73,8 +80,17 @@
         color: #856404;
       }
 
-      #nav a {
-        float: right;
+      #nav {
+          text-align: right;
+      }
+
+      h1 {
+          font-size: 2.5rem;
+          margin-bottom: 1.5rem;
+          font-weight: 500;
+          line-height: 1.2;
+          margin-top: 0;
+          text-align: center;
       }
     </style>
   </head>
@@ -82,8 +98,9 @@
   <body>
     <div class="container">
       <nav id="nav">
+        <span id="version-info">Loading Xray</span> |
         <a href="https://github.com/mmmray/xray-online">GitHub</a>
-        <h1 class="text-center mb-4">Xray Config Validator</h1>
+        <h1>Xray Config Validator</h1>
       </nav>
       <div id="editor"></div>
       <div id="output">Start typing your Xray config in the editor above.</div>
