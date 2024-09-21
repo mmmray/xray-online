@@ -1,0 +1,82 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "log": {
+      "type": "object",
+      "description": "Log configuration object",
+      "properties": {
+        "access": {
+          "type": "string",
+          "description": "File path for access logs"
+        },
+        "error": {
+          "type": "string",
+          "description": "File path for error logs"
+        },
+        "loglevel": {
+          "type": "string",
+          "enum": ["debug", "info", "warning", "error", "none"],
+          "description": "Log level for error logs"
+        },
+        "dnsLog": {
+          "type": "boolean",
+          "description": "Enable DNS query logging"
+        }
+      }
+    },
+    "api": {
+      "type": "object",
+      "description": "API configuration object"
+    },
+    "dns": {
+      "type": "object",
+      "description": "DNS configuration object"
+    },
+    "routing": {
+      "type": "object",
+      "description": "Routing configuration object"
+    },
+    "policy": {
+      "type": "object",
+      "description": "Policy configuration object"
+    },
+    "inbounds": {
+      "type": "array",
+      "description": "Inbounds configuration array"
+    },
+    "outbounds": {
+      "type": "array",
+      "description": "Outbounds configuration array"
+    },
+    "transport": {
+      "type": "object",
+      "description": "Transport configuration object"
+    },
+    "stats": {
+      "type": "object",
+      "description": "Stats configuration object"
+    },
+    "reverse": {
+      "type": "object",
+      "description": "Reverse proxy configuration object"
+    },
+    "fakedns": {
+      "type": "object",
+      "description": "Fake DNS configuration object"
+    },
+    "metrics": {
+      "type": "object",
+      "description": "Metrics configuration object"
+    },
+    "observatory": {
+      "type": "object",
+      "description": "Observatory configuration object"
+    },
+    "burstObservatory": {
+      "type": "object",
+      "description": "Burst observatory configuration object"
+    }
+  }
+}
+
