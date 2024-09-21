@@ -17,10 +17,10 @@ import (
 	json_reader "github.com/xtls/xray-core/infra/conf/json"
 )
 
-//go:embed geoip.dat
+//go:embed assets/geoip.dat
 var geoipRaw []byte
 
-//go:embed geosite.dat
+//go:embed assets/geosite.dat
 var geositeRaw []byte
 
 func main() {

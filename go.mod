@@ -2,7 +2,7 @@ module github.com/mmmray/xray-online
 
 go 1.22.4
 
-require github.com/xtls/xray-core v1.8.25-0.20240907003027-3d9137cb6fdd
+require github.com/xtls/xray-core v0.0.0
 
 require (
 	github.com/andybalholm/brotli v1.1.0 // indirect
@@ -46,4 +46,4 @@ require (
 	lukechampine.com/blake3 v1.3.0 // indirect
 )
 
-replace github.com/xtls/xray-core v1.8.25-0.20240907003027-3d9137cb6fdd => github.com/mmmray/xray-core v0.0.0-20240918112546-ebefcef53543
+replace github.com/xtls/xray-core => ./assets/xray-patched/
