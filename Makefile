@@ -34,7 +34,7 @@ xray.schema.json:
 	rm -rf assets/xray-docs-next
 	mkdir -p assets
 	cd assets && git clone --depth 1 https://github.com/xtls/xray-docs-next
-	rg '' assets/xray-docs-next/docs/en/config/ | cut -d: -f2- | python3 scrape-docs.py > xray.schema.json
+	grep -r '' assets/xray-docs-next/docs/en/config/ | cut -d: -f2- | python3 scrape-docs.py > xray.schema.json
 
 
 serve:
