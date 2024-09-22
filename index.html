@@ -1,117 +1,116 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+<head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Xray Config Validator</title>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ace.js"></script>
     <script src="wasm_exec.js"></script>
     <script>
-      const isReady = new Promise((resolve) => {
-        window.onWasmInitialized = resolve;
-      });
+        const isReady = new Promise((resolve) => {
+            window.onWasmInitialized = resolve;
+        });
 
-      const go = new Go();
+        const go = new Go();
 
-      (async () => {
-        const result = await WebAssembly.instantiateStreaming(fetch('main.wasm'), go.importObject);
-        go.run(result.instance);
-        await isReady;
-        document.getElementById("version-info").innerText = `Xray version ${XrayGetVersion()}`;
-      })()
+        (async () => {
+            const result = await WebAssembly.instantiateStreaming(fetch('main.wasm'), go.importObject);
+            go.run(result.instance);
+            await isReady;
+            document.getElementById("version-info").innerText = `Xray version ${XrayGetVersion()}`;
+        })();
     </script>
     <style>
-      * {
-        box-sizing: border-box;
-      }
-      html, body {
-        height: 100%;
-        padding: 0;
-        margin: 0;
-        background-color: #f8f9fa;
-        display: flex;
-        flex-direction: column;
-        font-family: system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue","Noto Sans","Liberation Sans",Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji";
-      }
+        * {
+            box-sizing: border-box;
+        }
+        html, body {
+            height: 100%;
+            padding: 0;
+            margin: 0;
+            background-color: #f8f9fa;
+            display: flex;
+            flex-direction: column;
+            font-family: system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue","Noto Sans","Liberation Sans",Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji";
+        }
 
-      .container {
-        width: 100%;
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        max-width: 800px;
-        margin: 0 auto;
-        padding: 20px;
-      }
+        .container {
+            width: 100%;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
 
-      #editor {
-        flex: 1;
-        border-radius: 5px;
-        border: 1px solid #ced4da;
-        height: auto;
-      }
+        #editor {
+            flex: 1;
+            border-radius: 5px;
+            border: 1px solid #ced4da;
+            height: 500px;
+        }
 
-      #output {
-        padding: 10px;
-        margin-top: 20px;
-        border-radius: 5px;
-        white-space: pre-wrap;
-        word-wrap: break-word;
-        border: 1px solid #ced4da;
-        text-align: center;
-        max-height: 200px;
-        overflow-y: auto;
-        flex-shrink: 0;
-      }
+        #output {
+            padding: 10px;
+            margin-top: 20px;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            border: 1px solid #ced4da;
+            text-align: center;
+            max-height: 200px;
+            overflow-y: auto;
+            flex-shrink: 0;
+        }
 
-      #output[data-status="ok"] {
-        background-color: #d4edda;
-        color: #155724;
-      }
+        #output[data-status="ok"] {
+            background-color: #d4edda;
+            color: #155724;
+        }
 
-      #output[data-status="error"] {
-        background-color: #f8d7da;
-        color: #721c24;
-      }
+        #output[data-status="error"] {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
 
-      #output[data-status="warn"] {
-        background-color: #fff3cd;
-        color: #856404;
-      }
+        #output[data-status="warn"] {
+            background-color: #fff3cd;
+            color: #856404;
+        }
 
-      #nav {
-          text-align: right;
-      }
+        #nav {
+            text-align: right;
+        }
 
-      h1 {
-          font-size: 2.5rem;
-          margin-bottom: 1.5rem;
-          font-weight: 500;
-          line-height: 1.2;
-          margin-top: 0;
-          text-align: center;
-      }
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            font-weight: 500;
+            line-height: 1.2;
+            margin-top: 0;
+            text-align: center;
+        }
     </style>
-  </head>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.33.0/min/vs/loader.min.js"></script>
+</head>
 
-  <body>
-    <div class="container">
-      <nav id="nav">
+<body>
+<div class="container">
+    <nav id="nav">
         <span id="version-info">Loading Xray</span> |
         <a href="https://github.com/mmmray/xray-online">GitHub</a>
         <h1>Xray Config Validator</h1>
-      </nav>
-      <div id="editor"></div>
-      <div id="output">Start typing your Xray config in the editor above.</div>
-    </div>
+    </nav>
+    <div id="editor"></div>
+    <div id="output">Start typing your Xray config in the editor above.</div>
+</div>
 
-    <script>
-      var editor = ace.edit("editor");
-      editor.setTheme("ace/theme/chrome");
-      editor.session.setMode("ace/mode/json");
-
-editor.setValue(`{
+<script>
+    require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.33.0/min/vs' }});
+    require(['vs/editor/editor.main'], function() {
+        var editor = monaco.editor.create(document.getElementById('editor'), {
+            value: `{
   "inbounds": [
     {
       "listen": "127.0.0.1",
@@ -159,47 +158,65 @@ editor.setValue(`{
       "tag": "proxy"
     }
   ]
-}`, -1);
+}`,
+            language: 'json',
+            theme: 'vs-light',
+            automaticLayout: true
+        });
 
+        let output = document.getElementById("output");
 
-      let output = document.getElementById("output");
-
-      function validateJSON(text) {
-        try {
-          JSON.parse(text);
-          return null;
-        } catch (error) {
-          return error.message;
-        }
-      }
-
-      editor.session.on('change', function() {
-        const jsonText = editor.getValue();
-        const validationError = validateJSON(jsonText);
-
-        if (validationError) {
-          output.dataset.status = "error";
-          output.innerText = "Validation Error: " + validationError;
-        } else {
-          if (typeof XrayParseConfig === 'undefined') {
-            output.dataset.status = "warn";
-            output.innerText = "Xray is still loading. Check the browser console.";
-          } else {
-            let validationResult = XrayParseConfig(jsonText);
-            if (validationResult) {
-              output.dataset.status = "error";
-              output.innerText = validationResult;
-            } else {
-              output.dataset.status = "ok";
-              output.innerText = "Valid Xray Config!";
+        function validateJSON(text) {
+            try {
+                JSON.parse(text);
+                return null;
+            } catch (error) {
+                return error.message;
             }
-          }
         }
-      });
+        fetch('xray-schema.json')
+            .then(response => response.json())
+            .then(schema => {
+                monaco.languages.json.jsonDefaults.setDiagnosticsOptions({
+                    validate: true,
+                    schemas: [{
+                        uri: "https://xray-config-schema",
+                        fileMatch: ["*"],
+                        schema: schema
+                    }]
+                });
+            })
+            .catch(error => console.error('Scheme load error:', error));
 
-      window.addEventListener("resize", function() {
-        editor.resize();
-      });
-    </script>
-  </body>
+        editor.onDidChangeModelContent(function() {
+            const jsonText = editor.getValue();
+            const validationError = validateJSON(jsonText);
+
+            if (validationError) {
+                output.dataset.status = "error";
+                output.innerText = "Validation Error: " + validationError;
+            } else {
+                if (typeof XrayParseConfig === 'undefined') {
+                    output.dataset.status = "warn";
+                    output.innerText = "Xray is still loading. Check the browser console.";
+                } else {
+                    let validationResult = XrayParseConfig(jsonText);
+                    if (validationResult) {
+                        output.dataset.status = "error";
+                        output.innerText = validationResult;
+                    } else {
+                        output.dataset.status = "ok";
+                        output.innerText = "Valid Xray Config!";
+                    }
+                }
+            }
+        });
+        window.addEventListener("resize", function() {
+            editor.layout();
+        });
+    });
+</script>
+
+</body>
 </html>
+
