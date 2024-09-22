@@ -28,10 +28,9 @@
             height: 100%;
             padding: 0;
             margin: 0;
-            background-color: #f8f9fa;
             display: flex;
             flex-direction: column;
-            font-family: system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue","Noto Sans","Liberation Sans",Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji";
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", "Liberation Sans", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
         }
 
         .container {
@@ -91,6 +90,19 @@
             margin-top: 0;
             text-align: center;
         }
+
+        @media (prefers-color-scheme: dark) {
+            body {
+                background-color: #121212;
+                color: #ffffff;
+            }
+            #editor {
+                border: 1px solid #555;
+            }
+            #output {
+                border: 1px solid #555;
+            }
+        }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.33.0/min/vs/loader.min.js"></script>
 </head>
@@ -109,7 +121,18 @@
 <script>
     require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.33.0/min/vs' }});
     require(['vs/editor/editor.main'], function() {
-        var editor = monaco.editor.create(document.getElementById('editor'), {
+        const editorElement = document.getElementById('editor');
+        const output = document.getElementById("output");
+
+
+        function updateEditorTheme() {
+            const prefersDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const theme = prefersDarkMode ? 'vs-dark' : 'vs-light';
+            monaco.editor.setTheme(theme);
+        }
+
+
+        const editor = monaco.editor.create(editorElement, {
             value: `{
   "inbounds": [
     {
@@ -164,7 +187,12 @@
             automaticLayout: true
         });
 
-        let output = document.getElementById("output");
+
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', updateEditorTheme);
+
+
+        updateEditorTheme();
+
 
         function validateJSON(text) {
             try {
@@ -174,6 +202,7 @@
                 return error.message;
             }
         }
+
         fetch('xray.schema.json')
             .then(response => response.json())
             .then(schema => {
@@ -211,6 +240,7 @@
                 }
             }
         });
+
         window.addEventListener("resize", function() {
             editor.layout();
         });
@@ -219,4 +249,3 @@
 
 </body>
 </html>
-
