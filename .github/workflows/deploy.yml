@@ -34,7 +34,7 @@ jobs:
           go-version: '1.23'
           check-latest: true
       - run: make build
-      - run: mkdir public && cp index.html main.wasm wasm_exec.js xray-schema.json public
+      - run: mkdir public && cp index.html main.wasm wasm_exec.js xray.schema.json public
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v1
         with:

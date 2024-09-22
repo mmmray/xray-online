@@ -174,7 +174,7 @@
                 return error.message;
             }
         }
-        fetch('xray-schema.json')
+        fetch('xray.schema.json')
             .then(response => response.json())
             .then(schema => {
                 monaco.languages.json.jsonDefaults.setDiagnosticsOptions({

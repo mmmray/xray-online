@@ -1,3 +1,4 @@
 *.wasm
 *.js
 assets
+*.schema.json

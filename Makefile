@@ -1,4 +1,4 @@
-build: main.wasm wasm_exec.js
+build: main.wasm wasm_exec.js xray.schema.json
 .PHONY: build
 
 dev-lite:
@@ -29,6 +29,13 @@ wasm_exec.js:
 
 main.wasm: assets/geoip.dat assets/geosite.dat assets/xray-patched main.go go.mod xray-wasm.patch
 	GOARCH=wasm GOOS=js go build -o main.wasm main.go
+
+xray.schema.json:
+	rm -rf assets/xray-docs-next
+	mkdir -p assets
+	cd assets && git clone --depth 1 https://github.com/xtls/xray-docs-next
+	rg '' assets/xray-docs-next/docs/en/config/ | cut -d: -f2- | python3 scrape-docs.py > xray.schema.json
+
 
 serve:
 	python3 -mhttp.server
