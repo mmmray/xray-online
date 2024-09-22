@@ -122,10 +122,22 @@ def parse_type(input: str) -> dict:
     raise Exception(input)
 
 def main():
+    definitions = {}
+    for definition in parse(sys.stdin):
+        key = definition['title']
+        if key in definitions:
+            # Handle multiple instances of
+            # InboundConfigurationObject/OutboundConfigurationObject
+            if "anyOf" not in definitions[key]:
+                definitions[key] = {"anyOf": [definitions[key]]}
+            definitions[key]['anyOf'].append(definition)
+        else:
+            definitions[key] = definition
+
     schema = {
         "$schema": "http://json-schema.org/draft-07/schema#",
         "$ref": "#/definitions/Basic Configuration Modules",
-        "definitions": {x['title']: x for x in parse(sys.stdin)},
+        "definitions": definitions
     }
 
     print(json.dumps(schema, indent=2))
