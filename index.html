@@ -30,12 +30,7 @@
             margin: 0;
             display: flex;
             flex-direction: column;
-            font-family: system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue","Noto Sans","Liberation Sans",Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji";
-        }
-
-        body {
-            background-color: #f8f9fa;
-            color: #212529;
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", "Liberation Sans", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
         }
 
         .container {
@@ -53,7 +48,6 @@
             border-radius: 5px;
             border: 1px solid #ced4da;
             height: 500px;
-            background-color: white;
         }
 
         #output {
@@ -67,8 +61,6 @@
             max-height: 200px;
             overflow-y: auto;
             flex-shrink: 0;
-            background-color: white;
-            color: #212529;
         }
 
         #output[data-status="ok"] {
@@ -99,58 +91,17 @@
             text-align: center;
         }
 
-        .dark-theme {
-            background-color: #121212;
-            color: #e0e0e0;
-        }
-
-        .dark-theme body {
-            background-color: #121212;
-            color: #e0e0e0;
-        }
-
-        .dark-theme .container {
-            background-color: #1e1e1e;
-            color: #e0e0e0;
-        }
-
-        .dark-theme #editor {
-            background-color: #1e1e1e;
-            color: #e0e0e0;
-            border: 1px solid #555;
-        }
-
-        .dark-theme #output {
-            background-color: #2e2e2e;
-            color: #e0e0e0;
-            border-color: #555;
-        }
-
-        .dark-theme #output[data-status="ok"] {
-            background-color: #2e7d32;
-            color: #c8e6c9;
-        }
-
-        .dark-theme #output[data-status="error"] {
-            background-color: #c62828;
-            color: #ffcdd2;
-        }
-
-        .dark-theme #output[data-status="warn"] {
-            background-color: #ffb74d;
-            color: #5f4339;
-        }
-
-        .dark-theme a {
-            color: #80cbc4;
-        }
-
-        .dark-theme #nav {
-            color: #e0e0e0;
-        }
-
-        .dark-theme input[type="checkbox"] {
-            accent-color: #80cbc4;
+        @media (prefers-color-scheme: dark) {
+            body {
+                background-color: #121212;
+                color: #ffffff;
+            }
+            #editor {
+                border: 1px solid #555;
+            }
+            #output {
+                border: 1px solid #555;
+            }
         }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.33.0/min/vs/loader.min.js"></script>
@@ -162,9 +113,6 @@
         <span id="version-info">Loading Xray</span> |
         <a href="https://github.com/mmmray/xray-online">GitHub</a>
         <h1>Xray Config Validator</h1>
-        <label>
-            <input type="checkbox" id="theme-toggle"> Dark Mode
-        </label>
     </nav>
     <div id="editor"></div>
     <div id="output">Start typing your Xray config in the editor above.</div>
@@ -173,7 +121,18 @@
 <script>
     require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.33.0/min/vs' }});
     require(['vs/editor/editor.main'], function() {
-        var editor = monaco.editor.create(document.getElementById('editor'), {
+        const editorElement = document.getElementById('editor');
+        const output = document.getElementById("output");
+
+
+        function updateEditorTheme() {
+            const prefersDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const theme = prefersDarkMode ? 'vs-dark' : 'vs-light';
+            monaco.editor.setTheme(theme);
+        }
+
+
+        const editor = monaco.editor.create(editorElement, {
             value: `{
   "inbounds": [
     {
@@ -228,7 +187,12 @@
             automaticLayout: true
         });
 
-        let output = document.getElementById("output");
+
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', updateEditorTheme);
+
+
+        updateEditorTheme();
+
 
         function validateJSON(text) {
             try {
@@ -280,16 +244,8 @@
         window.addEventListener("resize", function() {
             editor.layout();
         });
-
-        const themeToggle = document.getElementById('theme-toggle');
-        themeToggle.addEventListener('change', function() {
-            document.body.classList.toggle('dark-theme', themeToggle.checked);
-            const newTheme = themeToggle.checked ? 'vs-dark' : 'vs-light';
-            monaco.editor.setTheme(newTheme);
-        });
     });
 </script>
 
 </body>
 </html>
-
