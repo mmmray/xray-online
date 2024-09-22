@@ -1,6 +1,6 @@
-# Xray is online!
+# Xray Config Validator (xray-online)
 
-Parse and validate xray.json configuration in your browser.
+Parse and validate xray's JSON configuration in your browser.
 
 The basic idea is: Many GUI clients do not provide good error messages if a
 JSON config fails to load. Users don't want to run the core directly to find
