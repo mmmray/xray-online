@@ -4,6 +4,7 @@ build: main.wasm wasm_exec.js xray.schema.json
 dev-lite:
 	wget -nc https://mmmray.github.io/xray-online/main.wasm
 	wget -nc https://mmmray.github.io/xray-online/wasm_exec.js
+	wget -nc https://mmmray.github.io/xray-online/xray.schema.json
 .PHONY: build-lite
 
 assets/xray-patched: xray-version.txt
