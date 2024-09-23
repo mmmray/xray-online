@@ -24,7 +24,9 @@ def parse(stdin: Iterator[str]) -> Iterator[JsonschemaType]:
             if current_obj:
                 yield {
                     "title": current_obj['title'],
-                    "description": current_obj['description'],
+                    # hide noisy descriptions, code samples don't look good in
+                    # vscode/monaco
+                    "description": current_obj['description'] if not current_obj['description'].startswith("```") else "",
                     "properties": {
                         x['name']: x
                         for x in current_obj['raw_properties']
