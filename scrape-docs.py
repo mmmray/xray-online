@@ -104,9 +104,6 @@ def parse_type(input: str) -> dict:
     if input in ("string", "number"):
         return {"type": input}
 
-    if input == "int/string":
-        return parse_type("int | string")
-
     if input == "int":
         return {"type": "integer"}
 
