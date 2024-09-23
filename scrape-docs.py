@@ -20,8 +20,7 @@ def parse(stdin: Iterator[str]) -> Iterator[JsonschemaType]:
     for line in stdin:
         if not line.strip():
             continue
-        # MuxObject has a ### headline, most other items have ##
-        elif line.startswith(("## ", "### ")):
+        elif line.startswith("##"):
             if current_obj:
                 yield {
                     "title": current_obj['title'],
