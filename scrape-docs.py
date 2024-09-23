@@ -52,12 +52,9 @@ def parse(stdin: Iterator[str]) -> Iterator[JsonschemaType]:
             })
         elif current_obj:
             if current_obj['raw_properties']:
-                x = current_obj['raw_properties'][-1]
+                current_obj['raw_properties'][-1]['description'] += line
             else:
-                x = current_obj
-
-            if not x['description']:
-                x['description'] += line
+                current_obj['description'] += line
 
 def parse_type(input: str) -> dict:
     input = input \
