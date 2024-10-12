@@ -12,6 +12,9 @@ class RawType(TypedDict):
 class JsonschemaType(TypedDict):
     title: str
     description: str
+    # enable markdown in monaco
+    # https://github.com/microsoft/monaco-editor/issues/1816
+    markdownDescription: str
     properties: dict[str, dict]
     additionalProperties: bool
 
@@ -22,15 +25,14 @@ def parse(stdin: Iterator[str]) -> Iterator[JsonschemaType]:
     current_obj: RawType | None = None
 
     for line in stdin:
-        if not line.strip():
-            continue
-        elif line.startswith("##"):
+        if line.startswith("##"):
             if current_obj:
+                description = current_obj['description']
+
                 yield {
                     "title": current_obj['title'],
-                    # hide noisy descriptions, code samples don't look good in
-                    # vscode/monaco
-                    "description": current_obj['description'] if not current_obj['description'].startswith("```") else "",
+                    "description": description,
+                    "markdownDescription": description,
                     "properties": {
                         x['name']: x
                         for x in current_obj['raw_properties']
@@ -58,11 +60,13 @@ def parse(stdin: Iterator[str]) -> Iterator[JsonschemaType]:
             current_obj['raw_properties'].append({
                 "name": name,
                 "description": "",
+                "markdownDescription": "",
                 **parse_type(ty),
             })
         elif current_obj:
             if current_obj['raw_properties']:
                 current_obj['raw_properties'][-1]['description'] += line
+                current_obj['raw_properties'][-1]['markdownDescription'] += line
             else:
                 current_obj['description'] += line
 
