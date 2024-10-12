@@ -52,10 +52,9 @@
 
         #output {
             padding: 10px;
+            line-height: 1.2;
             margin-top: 20px;
             border-radius: 5px;
-            white-space: pre-wrap;
-            word-wrap: break-word;
             border: 1px solid #ced4da;
             text-align: center;
             max-height: 200px;
@@ -83,12 +82,21 @@
         }
 
         h1 {
-            font-size: 2.5rem;
-            margin-bottom: 1.5rem;
+            font-size: 1.8rem;
             font-weight: 500;
             line-height: 1.2;
             margin-top: 0;
             text-align: center;
+        }
+
+        a {
+            color: inherit;
+        }
+
+        .cool-color {
+            background-image: linear-gradient(to right,#E70000, #FF8C00, #FFEF00, #00811F, #0044FF, #760089);
+            -webkit-background-clip: text;
+            color:transparent;
         }
 
         @media (prefers-color-scheme: dark) {
@@ -110,12 +118,15 @@
 <body>
 <div class="container">
     <nav id="nav">
-        <span id="version-info">Loading Xray</span> |
+        <span id="version-info">Loading Xray&hellip;</span> |
         <a href="https://github.com/mmmray/xray-online">GitHub</a>
         <h1>Xray Config Validator</h1>
     </nav>
     <div id="editor"></div>
-    <div id="output">Start typing your Xray config in the editor above.</div>
+    <div id="output">
+        Start typing your Xray config in the editor above.<br>
+        Hover over fields for documentation. <span class="cool-color">Autocomplete</span> is available.
+    </div>
 </div>
 
 <script>
@@ -123,7 +134,6 @@
     require(['vs/editor/editor.main'], function() {
         const editorElement = document.getElementById('editor');
         const output = document.getElementById("output");
-
 
         function updateEditorTheme() {
             const prefersDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
