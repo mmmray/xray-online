@@ -13,6 +13,10 @@ class JsonschemaType(TypedDict):
     title: str
     description: str
     properties: dict[str, dict]
+    additionalProperties: bool
+
+KNOWN_BAD_RESOLVES = ("FakeDnsObject", "metricsObject", "TransportObject", "noiseObject", "DnsServerObject")
+USED_OBJECTS = set()
 
 def parse(stdin: Iterator[str]) -> Iterator[JsonschemaType]:
     current_obj: RawType | None = None
@@ -30,7 +34,13 @@ def parse(stdin: Iterator[str]) -> Iterator[JsonschemaType]:
                     "properties": {
                         x['name']: x
                         for x in current_obj['raw_properties']
-                    }
+                    },
+                    # turn off additionalProperties so that monaco will warn on
+                    # unknown properties. xray does allow for unknown
+                    # properties but most likely, setting them is a mistake. we
+                    # only do this if we have any props ourselves, otherwise
+                    # there is no point.
+                    "additionalProperties": not current_obj["raw_properties"]
                 }
 
             current_obj = {
@@ -77,22 +87,25 @@ def parse_type(input: str) -> dict:
             "items": parse_type(input[1:-1])
         }
 
-    if input.startswith("[") and input.endswith(")"):
+    if (input.startswith("[") and input.endswith(")")) or input.endswith("Object"):
         name = input.split("]")[0].strip("[]")
-        return {
-            "$ref": f"#/definitions/{name}"
-        }
+        if name in KNOWN_BAD_RESOLVES:
+            # If there is a dangling reference, monaco editor will turn off
+            # all inline validation markers, as the root object has a warning.
+            # So we catch all dangling references here and replace them with
+            # object.
+            return {"type": "object"}
+        else:
+            USED_OBJECTS.add(name)
+            return {
+                "$ref": f"#/definitions/{name}"
+            }
 
     if input in ("true", "false", "true | false", "bool"):
-        return {"type": "bool"}
+        return {"type": "boolean"}
 
     if " | " in input:
         return {"anyOf": [parse_type(x) for x in input.split(" | ")]}
-
-    if input.endswith("Object"):
-        return {
-            "$ref": f"#/definitions/{input}"
-        }
 
     if input in ("address", "address_port", "CIDR"):
         return {"type": "string"}
@@ -132,6 +145,9 @@ def main():
             definitions[key]['anyOf'].append(definition)
         else:
             definitions[key] = definition
+
+    for name in USED_OBJECTS:
+        assert name in definitions, f"Cannot resolve {name}, add to KNOWN_BAD_RESOLVES?"
 
     schema = {
         "$schema": "http://json-schema.org/draft-07/schema#",

@@ -119,7 +119,7 @@
 </div>
 
 <script>
-    require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.33.0/min/vs' }});
+    require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.0/min/vs' }});
     require(['vs/editor/editor.main'], function() {
         const editorElement = document.getElementById('editor');
         const output = document.getElementById("output");
@@ -208,6 +208,7 @@
             .then(schema => {
                 monaco.languages.json.jsonDefaults.setDiagnosticsOptions({
                     validate: true,
+                    allowComments: true,
                     schemas: [{
                         uri: "https://xray-config-schema",
                         fileMatch: ["*"],
