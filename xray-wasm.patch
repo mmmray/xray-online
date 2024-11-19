@@ -1,5 +1,5 @@
 diff --git a/app/commander/commander.go b/app/commander/commander.go
-index c433454..169ab2b 100644
+index 9ea71e6..4cf8904 100644
 --- a/app/commander/commander.go
 +++ b/app/commander/commander.go
 @@ -1,3 +1,6 @@
@@ -8,9 +8,9 @@ index c433454..169ab2b 100644
 +
  package commander
  
- //go:generate go run github.com/xtls/xray-core/common/errors/errorgen
+ import (
 diff --git a/app/dispatcher/default.go b/app/dispatcher/default.go
-index de8d191..90a773a 100644
+index 42fca67..29b39c5 100644
 --- a/app/dispatcher/default.go
 +++ b/app/dispatcher/default.go
 @@ -1,3 +1,6 @@
@@ -19,9 +19,9 @@ index de8d191..90a773a 100644
 +
  package dispatcher
  
- //go:generate go run github.com/xtls/xray-core/common/errors/errorgen
+ import (
 diff --git a/app/dispatcher/fakednssniffer.go b/app/dispatcher/fakednssniffer.go
-index f7486d1..762ab7c 100644
+index bed9087..78b4406 100644
 --- a/app/dispatcher/fakednssniffer.go
 +++ b/app/dispatcher/fakednssniffer.go
 @@ -1,3 +1,6 @@
@@ -43,7 +43,7 @@ index c138447..fa65d99 100644
  
  import (
 diff --git a/app/log/command/command.go b/app/log/command/command.go
-index 74ce2d5..a1afd75 100644
+index 2df8ce6..7c6113f 100644
 --- a/app/log/command/command.go
 +++ b/app/log/command/command.go
 @@ -1,3 +1,6 @@
@@ -52,7 +52,7 @@ index 74ce2d5..a1afd75 100644
 +
  package command
  
- //go:generate go run github.com/xtls/xray-core/common/errors/errorgen
+ import (
 diff --git a/app/metrics/metrics.go b/app/metrics/metrics.go
 index 757d673..72628c1 100644
 --- a/app/metrics/metrics.go
@@ -87,7 +87,7 @@ index f29856d..83642e1 100644
  
  import (
 diff --git a/app/proxyman/command/command.go b/app/proxyman/command/command.go
-index 4554f32..7de066b 100644
+index 3c7824d..aea86c1 100644
 --- a/app/proxyman/command/command.go
 +++ b/app/proxyman/command/command.go
 @@ -1,3 +1,6 @@
@@ -120,7 +120,7 @@ index 0a98b88..3a3e477 100644
  
  import (
 diff --git a/app/proxyman/inbound/inbound.go b/app/proxyman/inbound/inbound.go
-index 1881283..261109a 100644
+index cc6aa9d..70f95b8 100644
 --- a/app/proxyman/inbound/inbound.go
 +++ b/app/proxyman/inbound/inbound.go
 @@ -1,3 +1,6 @@
@@ -129,9 +129,9 @@ index 1881283..261109a 100644
 +
  package inbound
  
- //go:generate go run github.com/xtls/xray-core/common/errors/errorgen
+ import (
 diff --git a/app/proxyman/inbound/worker.go b/app/proxyman/inbound/worker.go
-index a14a338..706ae0b 100644
+index 14df725..b0e4027 100644
 --- a/app/proxyman/inbound/worker.go
 +++ b/app/proxyman/inbound/worker.go
 @@ -1,3 +1,6 @@
@@ -142,7 +142,7 @@ index a14a338..706ae0b 100644
  
  import (
 diff --git a/app/proxyman/outbound/handler.go b/app/proxyman/outbound/handler.go
-index 47d7d6b..3ce99be 100644
+index df7d52a..3ecd2c9 100644
 --- a/app/proxyman/outbound/handler.go
 +++ b/app/proxyman/outbound/handler.go
 @@ -1,3 +1,6 @@
@@ -153,7 +153,7 @@ index 47d7d6b..3ce99be 100644
  
  import (
 diff --git a/app/proxyman/outbound/outbound.go b/app/proxyman/outbound/outbound.go
-index f697801..3da3e08 100644
+index 8660e6a..bf5cfa1 100644
 --- a/app/proxyman/outbound/outbound.go
 +++ b/app/proxyman/outbound/outbound.go
 @@ -1,3 +1,6 @@
@@ -162,7 +162,7 @@ index f697801..3da3e08 100644
 +
  package outbound
  
- //go:generate go run github.com/xtls/xray-core/common/errors/errorgen
+ import (
 diff --git a/app/proxyman/outbound/uot.go b/app/proxyman/outbound/uot.go
 index 659f65a..92af387 100644
 --- a/app/proxyman/outbound/uot.go
@@ -175,7 +175,7 @@ index 659f65a..92af387 100644
  
  import (
 diff --git a/app/stats/command/command.go b/app/stats/command/command.go
-index 2c603ca..f0f6cb6 100644
+index e4926ba..7108e9d 100644
 --- a/app/stats/command/command.go
 +++ b/app/stats/command/command.go
 @@ -1,3 +1,6 @@
@@ -184,7 +184,7 @@ index 2c603ca..f0f6cb6 100644
 +
  package command
  
- //go:generate go run github.com/xtls/xray-core/common/errors/errorgen
+ import (
 diff --git a/common/buf/readv_reader_wasm.go b/common/buf/readv_reader_wasm.go
 index 30b52e7..0354511 100644
 --- a/common/buf/readv_reader_wasm.go
@@ -204,10 +204,10 @@ index 30b52e7..0354511 100644
  	panic("not implemented")
  }
 diff --git a/common/common.go b/common/common.go
-index cada997..5957cbc 100644
+index c00371b..caf70fd 100644
 --- a/common/common.go
 +++ b/common/common.go
-@@ -153,3 +153,6 @@ func GetModuleName(pathToProjectRoot string) (string, error) {
+@@ -151,3 +151,6 @@ func GetModuleName(pathToProjectRoot string) (string, error) {
  	}
  	return moduleName, fmt.Errorf("no `go.mod` file in every parent directory of `%s`", pathToProjectRoot)
  }
@@ -215,7 +215,7 @@ index cada997..5957cbc 100644
 +// len(syscall.RawSockaddrUnix{}.Path)
 +const RawSockAddrUnixLen = 108
 diff --git a/infra/conf/shadowsocks.go b/infra/conf/shadowsocks.go
-index 1bd6462..5dd4727 100644
+index f12040a..c408bcf 100644
 --- a/infra/conf/shadowsocks.go
 +++ b/infra/conf/shadowsocks.go
 @@ -3,7 +3,6 @@ package conf
@@ -248,7 +248,7 @@ index 1bd6462..5dd4727 100644
  		return buildShadowsocks2022(v)
  	}
  
-@@ -178,7 +183,7 @@ func (v *ShadowsocksClientConfig) Build() (proto.Message, error) {
+@@ -182,7 +187,7 @@ func (v *ShadowsocksClientConfig) Build() (proto.Message, error) {
  
  	if len(v.Servers) == 1 {
  		server := v.Servers[0]
@@ -257,7 +257,7 @@ index 1bd6462..5dd4727 100644
  			if server.Address == nil {
  				return nil, errors.New("Shadowsocks server address is not set.")
  			}
-@@ -203,7 +208,7 @@ func (v *ShadowsocksClientConfig) Build() (proto.Message, error) {
+@@ -207,7 +212,7 @@ func (v *ShadowsocksClientConfig) Build() (proto.Message, error) {
  	config := new(shadowsocks.ClientConfig)
  	serverSpecs := make([]*protocol.ServerEndpoint, len(v.Servers))
  	for idx, server := range v.Servers {
@@ -267,7 +267,7 @@ index 1bd6462..5dd4727 100644
  		}
  		if server.Address == nil {
 diff --git a/infra/conf/transport_internet.go b/infra/conf/transport_internet.go
-index 21cffc0..0c8fd49 100644
+index ca8f3fe..080e0da 100644
 --- a/infra/conf/transport_internet.go
 +++ b/infra/conf/transport_internet.go
 @@ -9,8 +9,8 @@ import (
@@ -280,7 +280,7 @@ index 21cffc0..0c8fd49 100644
  	"github.com/xtls/xray-core/common/errors"
  	"github.com/xtls/xray-core/common/net"
  	"github.com/xtls/xray-core/common/platform/filesystem"
-@@ -508,7 +508,7 @@ func (c *REALITYConfig) Build() (proto.Message, error) {
+@@ -562,7 +562,7 @@ func (c *REALITYConfig) Build() (proto.Message, error) {
  			case '@', '/':
  				c.Type = "unix"
  				if s[0] == '@' && len(s) > 1 && s[1] == '@' && (runtime.GOOS == "linux" || runtime.GOOS == "android") {
@@ -347,7 +347,7 @@ index c2ad1c1..71ef74a 100644
  
  import (
 diff --git a/proxy/shadowsocks/protocol.go b/proxy/shadowsocks/protocol.go
-index 00855c7..874a73a 100644
+index c992f61..40aa976 100644
 --- a/proxy/shadowsocks/protocol.go
 +++ b/proxy/shadowsocks/protocol.go
 @@ -1,3 +1,6 @@
@@ -358,7 +358,7 @@ index 00855c7..874a73a 100644
  
  import (
 diff --git a/proxy/shadowsocks/server.go b/proxy/shadowsocks/server.go
-index e6135a4..952e5be 100644
+index 356868e..576e398 100644
 --- a/proxy/shadowsocks/server.go
 +++ b/proxy/shadowsocks/server.go
 @@ -1,3 +1,6 @@
@@ -380,7 +380,7 @@ index a889fa0..2a71621 100644
  
  import (
 diff --git a/proxy/shadowsocks_2022/inbound_multi.go b/proxy/shadowsocks_2022/inbound_multi.go
-index 8cb2d65..a9f63bf 100644
+index 4bfa086..df8096e 100644
 --- a/proxy/shadowsocks_2022/inbound_multi.go
 +++ b/proxy/shadowsocks_2022/inbound_multi.go
 @@ -1,3 +1,6 @@
@@ -445,7 +445,7 @@ index 0000000..152df97
 +	panic("unimplemented")
 +}
 diff --git a/transport/internet/grpc/dial.go b/transport/internet/grpc/dial.go
-index 24ae8ad..a05fc4f 100644
+index b8740da..42f9562 100644
 --- a/transport/internet/grpc/dial.go
 +++ b/transport/internet/grpc/dial.go
 @@ -1,3 +1,6 @@
@@ -456,7 +456,7 @@ index 24ae8ad..a05fc4f 100644
  
  import (
 diff --git a/transport/internet/grpc/hub.go b/transport/internet/grpc/hub.go
-index b07c3b7..cd4ff25 100644
+index ae8788f..48c30f8 100644
 --- a/transport/internet/grpc/hub.go
 +++ b/transport/internet/grpc/hub.go
 @@ -1,3 +1,6 @@
@@ -467,7 +467,7 @@ index b07c3b7..cd4ff25 100644
  
  import (
 diff --git a/transport/internet/http/dialer.go b/transport/internet/http/dialer.go
-index a1421d3..5e10326 100644
+index d0a86e8..6e15cec 100644
 --- a/transport/internet/http/dialer.go
 +++ b/transport/internet/http/dialer.go
 @@ -1,3 +1,6 @@
@@ -478,7 +478,7 @@ index a1421d3..5e10326 100644
  
  import (
 diff --git a/transport/internet/http/hub.go b/transport/internet/http/hub.go
-index 3421ae6..f0f451e 100644
+index 1fac2b7..697f26d 100644
 --- a/transport/internet/http/hub.go
 +++ b/transport/internet/http/hub.go
 @@ -1,3 +1,6 @@
@@ -533,7 +533,7 @@ index 71ce646..60e98c9 100644
  
  import (
 diff --git a/transport/internet/splithttp/dialer.go b/transport/internet/splithttp/dialer.go
-index 60f8c62..4800f9c 100644
+index d2e89eb..80da178 100644
 --- a/transport/internet/splithttp/dialer.go
 +++ b/transport/internet/splithttp/dialer.go
 @@ -1,3 +1,6 @@
@@ -544,7 +544,7 @@ index 60f8c62..4800f9c 100644
  
  import (
 diff --git a/transport/internet/splithttp/hub.go b/transport/internet/splithttp/hub.go
-index 423bf6e..995d550 100644
+index 58113f0..e7f5ce8 100644
 --- a/transport/internet/splithttp/hub.go
 +++ b/transport/internet/splithttp/hub.go
 @@ -1,3 +1,6 @@
