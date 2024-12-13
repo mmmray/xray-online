@@ -36,7 +36,7 @@ jobs:
       - run: make build
       - run: mkdir public && cp index.html main.wasm wasm_exec.js xray.schema.json public
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v1
+        uses: actions/upload-pages-artifact@v3
         with:
           path: public/
 
