@@ -178,7 +178,7 @@
     </div>
     <div class="button-group">
         <button id="share-config">Share Configuration</button>
-        <button id="load-config">Load Configuration</button>
+        <button id="import-config">Import Configuration</button>
     </div>
 </div>
 
@@ -395,13 +395,13 @@
             }
         }
 
-        const loadButton = document.getElementById('load-config');
+        const importButton = document.getElementById('import-config');
 
         const fileInput = document.createElement('input');
         fileInput.type = 'file';
         fileInput.accept = '.json';
 
-        loadButton.addEventListener('click', () => {
+        importButton.addEventListener('click', () => {
             fileInput.click();
         });
 
