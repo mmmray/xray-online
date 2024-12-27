@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Xray Config Validator</title>
 
     <script src="wasm_exec.js"></script>
@@ -24,6 +24,7 @@
         * {
             box-sizing: border-box;
         }
+
         html, body {
             height: 100%;
             padding: 0;
@@ -94,23 +95,71 @@
         }
 
         .cool-color {
-            background-image: linear-gradient(to right,#E70000, #FF8C00, #FFEF00, #00811F, #0044FF, #760089);
+            background-image: linear-gradient(to right, #E70000, #FF8C00, #FFEF00, #00811F, #0044FF, #760089);
             -webkit-background-clip: text;
-            color:transparent;
+            color: transparent;
+        }
+
+        .button-group {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            background-color: #f8f9fa;
+            color: #212529;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.2s ease, box-shadow 0.2s ease;
+            width: 100%;
+            max-width: 250px;
+        }
+
+        button:hover {
+            background-color: #e9ecef;
+        }
+
+        button:active {
+            background-color: #dee2e6;
+            box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
         }
 
         @media (prefers-color-scheme: dark) {
+            button {
+                background-color: #333;
+                border: 1px solid #555;
+                color: #fff;
+            }
+
+            button:hover {
+                background-color: #444;
+            }
+
+            button:active {
+                background-color: #555;
+            }
+
             body {
                 background-color: #121212;
                 color: #ffffff;
             }
+
             #editor {
                 border: 1px solid #555;
             }
+
             #output {
                 border: 1px solid #555;
             }
         }
+
+
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.33.0/min/vs/loader.min.js"></script>
 </head>
@@ -127,11 +176,15 @@
         Start typing your Xray config in the editor above.<br>
         Hover over fields for documentation. <span class="cool-color">Autocomplete</span> is available.
     </div>
+    <div class="button-group">
+        <button id="share-config">Share Configuration</button>
+        <button id="load-config">Load Configuration</button>
+    </div>
 </div>
 
 <script>
-    require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.0/min/vs' }});
-    require(['vs/editor/editor.main'], function() {
+    require.config({paths: {'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.0/min/vs'}});
+    require(['vs/editor/editor.main'], async function () {
         const editorElement = document.getElementById('editor');
         const output = document.getElementById("output");
 
@@ -143,7 +196,129 @@
 
 
         const editor = monaco.editor.create(editorElement, {
-            value: `{
+            language: 'json',
+            theme: 'vs-light',
+            automaticLayout: true
+        });
+
+
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', updateEditorTheme);
+
+
+        updateEditorTheme();
+
+
+        function validateJSON(text) {
+            try {
+                JSON.parse(text);
+                return null;
+            } catch (error) {
+                return error.message;
+            }
+        }
+
+        fetch('xray.schema.json')
+            .then(response => response.json())
+            .then(schema => {
+                monaco.languages.json.jsonDefaults.setDiagnosticsOptions({
+                    validate: true,
+                    allowComments: true,
+                    schemas: [{
+                        uri: "https://xray-config-schema",
+                        fileMatch: ["*"],
+                        schema: schema
+                    }]
+                });
+            })
+            .catch(error => console.error('Scheme load error:', error));
+
+        function validateConfig() {
+            const jsonText = editor.getValue();
+            const validationError = validateJSON(jsonText);
+
+            if (validationError) {
+                output.dataset.status = "error";
+                output.innerText = "Validation Error: " + validationError;
+            } else {
+                if (typeof XrayParseConfig === 'undefined') {
+                    output.dataset.status = "warn";
+                    output.innerText = "Xray is still loading. Check the browser console.";
+                } else {
+                    let validationResult = XrayParseConfig(jsonText);
+                    if (validationResult) {
+                        output.dataset.status = "error";
+                        output.innerText = validationResult;
+                    } else {
+                        output.dataset.status = "ok";
+                        output.innerText = "Valid Xray Config!";
+                    }
+                }
+            }
+        }
+
+        editor.onDidChangeModelContent(validateConfig);
+
+        window.addEventListener("resize", function () {
+            editor.layout();
+        });
+
+        const brotli = await import("https://unpkg.com/brotli-wasm@3.0.0/index.web.js?module").then(m => m.default);
+        const textEncoder = new TextEncoder();
+        const textDecoder = new TextDecoder('utf-8');
+
+        document.getElementById("share-config").addEventListener("click", async () => {
+            if (!editor) {
+                console.error('Editor is not loaded');
+                return;
+            }
+            const config = editor.getValue();
+
+            const compressed = await compressWithBrotli(config);
+            const base64String = uint8ArrayToBase64(compressed)
+
+            const baseUrl = window.location.origin + window.location.pathname;
+            const url = `${baseUrl}?c=${base64String}`;
+
+            if (url.length < 2000) {
+                navigator.clipboard.writeText(url).then(() => {
+                    alert("Shareable link copied to clipboard!");
+                }).catch((err) => {
+                    console.error("Failed to copy link: ", err);
+                });
+            } else {
+                const blob = new Blob([config], {type: "application/json"});
+                const downloadLink = document.createElement("a");
+                downloadLink.href = URL.createObjectURL(blob);
+                downloadLink.download = "xray-config.json";
+                downloadLink.click();
+            }
+        });
+
+        function uint8ArrayToBase64(uint8Array) {
+            let binaryString = '';
+            for (let i = 0; i < uint8Array.length; i++) {
+                binaryString += String.fromCharCode(uint8Array[i]);
+            }
+
+            return btoa(binaryString);
+        }
+
+        function compressWithBrotli(input) {
+            const uncompressedData = textEncoder.encode(input);
+            return brotli.compress(uncompressedData)
+        }
+
+        const urlParams = new URLSearchParams(window.location.search);
+        let encodedConfig = urlParams.get('c');
+
+        if (encodedConfig) {
+            decodeAndLoadConfig(encodedConfig)
+        } else {
+            setDefaultConfigValue()
+        }
+
+        function setDefaultConfigValue() {
+            editor.setValue(`{
   "inbounds": [
     {
       "listen": "127.0.0.1",
@@ -191,71 +366,59 @@
       "tag": "proxy"
     }
   ]
-}`,
-            language: 'json',
-            theme: 'vs-light',
-            automaticLayout: true
-        });
+}`,);
+        }
 
-
-        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', updateEditorTheme);
-
-
-        updateEditorTheme();
-
-
-        function validateJSON(text) {
+        function decodeAndLoadConfig(encodedConfig) {
             try {
-                JSON.parse(text);
-                return null;
+                encodedConfig = encodedConfig.replace(/ /g, '+').trim();
+
+                const base64ToUint8Array = (base64String) => {
+                    const binaryString = atob(base64String);
+                    const len = binaryString.length;
+                    const bytes = new Uint8Array(len);
+                    for (let i = 0; i < len; i++) {
+                        bytes[i] = binaryString.charCodeAt(i);
+                    }
+                    return bytes;
+                };
+
+                const compressedConfig = base64ToUint8Array(encodedConfig);
+                const decompressedConfig = brotli.decompress(compressedConfig);
+                const configText = textDecoder.decode(decompressedConfig);
+
+                editor.setValue(configText);
             } catch (error) {
-                return error.message;
+                console.error("Failed to decode and decompress configuration:", error);
+                output.dataset.status = "error";
+                output.innerText = "Failed to decode and load shared configuration.";
             }
         }
 
-        fetch('xray.schema.json')
-            .then(response => response.json())
-            .then(schema => {
-                monaco.languages.json.jsonDefaults.setDiagnosticsOptions({
-                    validate: true,
-                    allowComments: true,
-                    schemas: [{
-                        uri: "https://xray-config-schema",
-                        fileMatch: ["*"],
-                        schema: schema
-                    }]
-                });
-            })
-            .catch(error => console.error('Scheme load error:', error));
+        const loadButton = document.getElementById('load-config');
 
-        editor.onDidChangeModelContent(function() {
-            const jsonText = editor.getValue();
-            const validationError = validateJSON(jsonText);
+        const fileInput = document.createElement('input');
+        fileInput.type = 'file';
+        fileInput.accept = '.json';
 
-            if (validationError) {
-                output.dataset.status = "error";
-                output.innerText = "Validation Error: " + validationError;
-            } else {
-                if (typeof XrayParseConfig === 'undefined') {
-                    output.dataset.status = "warn";
-                    output.innerText = "Xray is still loading. Check the browser console.";
-                } else {
-                    let validationResult = XrayParseConfig(jsonText);
-                    if (validationResult) {
-                        output.dataset.status = "error";
-                        output.innerText = validationResult;
-                    } else {
-                        output.dataset.status = "ok";
-                        output.innerText = "Valid Xray Config!";
-                    }
-                }
+        loadButton.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        fileInput.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const content = e.target.result;
+                    editor.setValue(content);
+                    validateConfig();
+                };
+                reader.readAsText(file);
             }
         });
-
-        window.addEventListener("resize", function() {
-            editor.layout();
-        });
     });
+
 </script>
 
 </body>
