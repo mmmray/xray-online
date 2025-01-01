@@ -18,7 +18,7 @@ class JsonschemaType(TypedDict):
     properties: dict[str, dict]
     additionalProperties: bool
 
-KNOWN_BAD_RESOLVES = ("FakeDnsObject", "metricsObject", "TransportObject", "noiseObject", "DnsServerObject")
+KNOWN_BAD_RESOLVES = ("FakeDnsObject", "metricsObject", "TransportObject", "noiseObject", "DnsServerObject","xhttpSettings","PingConfigObject","XHTTP: Beyond REALITY")
 USED_OBJECTS = set()
 
 def parse(stdin: Iterator[str]) -> Iterator[JsonschemaType]:
