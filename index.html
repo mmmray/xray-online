@@ -6,7 +6,7 @@
     <title>Xray Config Validator</title>
 
     <script src="wasm_exec.js"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css">
 
     <style>
         * {
@@ -43,7 +43,8 @@
         #output {
             padding: 10px;
             line-height: 1.2;
-            margin-top: 20px;
+            margin-top: 10px;
+            margin-bottom: 20px;
             border-radius: 5px;
             border: 1px solid #ced4da;
             text-align: center;
@@ -76,7 +77,7 @@
             justify-content: flex-end;
             align-items: center;
             gap: 10px;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
         }
 
         .button-group button {
@@ -90,7 +91,20 @@
             font-size: 1rem;
             cursor: pointer;
             transition: background-color 0.2s ease, color 0.2s ease;
+            background-color: #f0f0f5;
+            color: #333;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
+
+        .button-group button:hover {
+            background-color: #e0e0eb;
+        }
+
+        .button-group button:active {
+            background-color: #d0d0df;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
 
         h1 {
             font-size: 1.8rem;
@@ -107,23 +121,6 @@
             background-image: linear-gradient(to right, #e70000, #ff8c00, #ffef00, #00811f, #0044ff, #760089);
             -webkit-background-clip: text;
             color: transparent;
-        }
-
-
-
-        .button-group button {
-            background-color: #f0f0f5;
-            color: #333;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        .button-group button:hover {
-            background-color: #e0e0eb;
-        }
-
-        .button-group button:active {
-            background-color: #d0d0df;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
         }
 
         body.dark-theme {
@@ -151,6 +148,7 @@
         body.dark-theme .button-group button:active {
             background-color: #555;
         }
+
 
         #loading-indicator {
             display: flex;
@@ -187,7 +185,7 @@
             margin-right: 0;
         }
     </style>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.0/min/vs/loader.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs/loader.min.js"></script>
 </head>
 <body>
 <div id="loading-indicator">
@@ -196,7 +194,7 @@
 
 <div class="container">
     <div class="button-group">
-        <span id="version-info">Loading Xray… </span>
+        <span id="version-info">Loading… </span>
         <button id="theme-toggle"><i class="fas fa-adjust"></i></button>
         <button id="share-config"><i class="fas fa-share-alt"></i></button>
     </div>
@@ -226,7 +224,7 @@
             const result = await WebAssembly.instantiateStreaming(fetch('main.wasm'), go.importObject);
             go.run(result.instance);
             await isReady;
-            document.getElementById("version-info").innerText = `${XrayGetVersion()}`;
+            document.getElementById("version-info").innerText = `v${XrayGetVersion()}`;
         } catch (error) {
             console.error("Error loading WASM:", error);
             document.getElementById("version-info").innerText = "Error loading Xray. Check the browser console.";
@@ -237,7 +235,7 @@
         }
     })();
 
-    require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.0/min/vs' } });
+    require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs' } });
     require(['vs/editor/editor.main'], async function () {
 
         const editorElement = document.getElementById('editor');
@@ -320,7 +318,7 @@
             editor.layout();
         });
 
-        const brotli = await import("https://unpkg.com/brotli-wasm@3.0.0/index.web.js?module").then(m => m.default);
+        const brotli = await import("https://unpkg.com/brotli-wasm@3.0.1/index.web.js?module").then(m => m.default);
         const textEncoder = new TextEncoder();
         const textDecoder = new TextDecoder('utf-8');
 
@@ -362,7 +360,55 @@
         let encodedConfig = urlParams.get('c');
 
         function setDefaultConfigValue() {
-            editor.setValue(`{}`);
+            editor.setValue(`{
+  "inbounds": [
+    {
+      "listen": "127.0.0.1",
+      "port": 10808,
+      "protocol": "socks",
+      "settings": {
+        "udp": true
+      },
+      "sniffing": {
+        "enabled": true,
+        "destOverride": [
+          "http",
+          "tls"
+        ]
+      }
+    }
+  ],
+  "outbounds": [
+    {
+      "protocol": "vless",
+      "settings": {
+        "vnext": [
+          {
+            "address": "",
+            "port": 443,
+            "users": [
+              {
+                "id": "user",
+                "encryption": "none",
+                "flow": "xtls-rprx-vision"
+              }
+            ]
+          }
+        ]
+      },
+      "streamSettings": {
+        "network": "raw",
+        "security": "tls",
+        "tlsSettings": {
+          "serverName": "",
+          "allowInsecure": false,
+          "fingerprint": "chrome"
+        }
+      },
+      "tag": "proxy"
+    }
+  ]
+}`);
         }
 
         function decodeAndLoadConfig(encodedConfig) {
