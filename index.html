@@ -6,13 +6,15 @@
     <title>Xray Config Validator</title>
 
     <script src="wasm_exec.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6/css/all.min.css">
 
     <style>
         * {
             box-sizing: border-box;
         }
 
-        html, body {
+        html,
+        body {
             height: 100%;
             padding: 0;
             margin: 0;
@@ -66,7 +68,28 @@
         }
 
         #nav {
-            text-align: right;
+            text-align: center;
+        }
+
+        .button-group {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .button-group button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            border: none;
+            border-radius: 4px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.2s ease, color 0.2s ease;
         }
 
         h1 {
@@ -74,7 +97,6 @@
             font-weight: 500;
             line-height: 1.2;
             margin-top: 0;
-            text-align: center;
         }
 
         a {
@@ -82,68 +104,52 @@
         }
 
         .cool-color {
-            background-image: linear-gradient(to right, #E70000, #FF8C00, #FFEF00, #00811F, #0044FF, #760089);
+            background-image: linear-gradient(to right, #e70000, #ff8c00, #ffef00, #00811f, #0044ff, #760089);
             -webkit-background-clip: text;
             color: transparent;
         }
 
-        .button-group {
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-top: 20px;
+
+
+        .button-group button {
+            background-color: #f0f0f5;
+            color: #333;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
-        button {
-            padding: 10px 20px;
-            border: 1px solid #ced4da;
-            border-radius: 5px;
-            background-color: #f8f9fa;
-            color: #212529;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: background-color 0.2s ease, box-shadow 0.2s ease;
-            width: 100%;
-            max-width: 250px;
+        .button-group button:hover {
+            background-color: #e0e0eb;
         }
 
-        button:hover {
-            background-color: #e9ecef;
+        .button-group button:active {
+            background-color: #d0d0df;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
         }
 
-        button:active {
-            background-color: #dee2e6;
-            box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+        body.dark-theme {
+            background-color: #121212;
+            color: #ffffff;
         }
 
-        @media (prefers-color-scheme: dark) {
-            body {
-                background-color: #121212;
-                color: #ffffff;
-            }
+        body.dark-theme #editor {
+            border: 1px solid #555;
+        }
 
-            #editor {
-                border: 1px solid #555;
-            }
+        body.dark-theme #output {
+            border: 1px solid #555;
+        }
 
-            #output {
-                border: 1px solid #555;
-            }
+        body.dark-theme .button-group button {
+            background-color: #333;
+            color: #fff;
+        }
 
-            button {
-                background-color: #333;
-                border: 1px solid #555;
-                color: #fff;
-            }
+        body.dark-theme .button-group button:hover {
+            background-color: #444;
+        }
 
-            button:hover {
-                background-color: #444;
-            }
-
-            button:active {
-                background-color: #555;
-            }
+        body.dark-theme .button-group button:active {
+            background-color: #555;
         }
 
         #loading-indicator {
@@ -176,31 +182,36 @@
                 transform: rotate(360deg);
             }
         }
-    </style>
 
+        #theme-toggle i {
+            margin-right: 0;
+        }
+    </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.0/min/vs/loader.min.js"></script>
 </head>
 <body>
-
 <div id="loading-indicator">
     <div id="loading-spinner"></div>
 </div>
 
 <div class="container">
+    <div class="button-group">
+        <span id="version-info">Loading Xray… </span>
+        <button id="theme-toggle"><i class="fas fa-adjust"></i></button>
+        <button id="share-config"><i class="fas fa-share-alt"></i></button>
+    </div>
+
     <nav id="nav">
-        <span id="version-info">Loading Xray…</span> |
-        <a href="https://github.com/mmmray/xray-online">GitHub</a>
         <h1>Xray Config Validator</h1>
     </nav>
     <div id="editor"></div>
     <div id="output">
         Start typing your Xray config in the editor above.<br>
-        Hover over fields for documentation. <span class="cool-color">Autocomplete</span> is available.
-    </div>
-    <div class="button-group">
-        <button id="share-config">Share Configuration</button>
+        Hover over fields for documentation.
+        <span class="cool-color">Autocomplete</span> is available.
     </div>
 </div>
+
 
 <script>
     const go = new Go();
@@ -210,13 +221,12 @@
 
     const output = document.getElementById("output");
 
-
     (async () => {
         try {
             const result = await WebAssembly.instantiateStreaming(fetch('main.wasm'), go.importObject);
             go.run(result.instance);
             await isReady;
-            document.getElementById("version-info").innerText = `Xray version ${XrayGetVersion()}`;
+            document.getElementById("version-info").innerText = `${XrayGetVersion()}`;
         } catch (error) {
             console.error("Error loading WASM:", error);
             document.getElementById("version-info").innerText = "Error loading Xray. Check the browser console.";
@@ -227,25 +237,30 @@
         }
     })();
 
-
-    require.config({paths: {'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.0/min/vs'}});
+    require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.0/min/vs' } });
     require(['vs/editor/editor.main'], async function () {
+
         const editorElement = document.getElementById('editor');
 
-        function updateEditorTheme() {
-            const prefersDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            const theme = prefersDarkMode ? 'vs-dark' : 'vs-light';
-            monaco.editor.setTheme(theme);
+        let currentTheme = 'vs-light';
+
+        function updateEditorAndPageTheme() {
+            if (currentTheme === 'vs-light') {
+                document.body.classList.remove('dark-theme');
+            } else {
+                document.body.classList.add('dark-theme');
+            }
+            monaco.editor.setTheme(currentTheme);
         }
 
         const editor = monaco.editor.create(editorElement, {
             language: 'json',
-            theme: 'vs-light',
+            theme: currentTheme,
             automaticLayout: true
         });
 
-        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', updateEditorTheme);
-        updateEditorTheme();
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', updateEditorAndPageTheme);
+        updateEditorAndPageTheme();
 
 
         function validateJSON(text) {
@@ -276,8 +291,6 @@
                 output.innerText = "Error loading schema. Check browser console.";
             });
 
-
-
         function validateConfig() {
             const jsonText = editor.getValue();
             const validationError = validateJSON(jsonText);
@@ -291,6 +304,7 @@
                     output.innerText = "Xray is still loading. Check the browser console.";
                 } else {
                     let validationResult = XrayParseConfig(jsonText);
+
                     if (validationResult) {
                         output.dataset.status = "error";
                         output.innerText = validationResult;
@@ -302,19 +316,13 @@
             }
         }
 
-
-
-
         window.addEventListener("resize", function () {
             editor.layout();
         });
 
-
         const brotli = await import("https://unpkg.com/brotli-wasm@3.0.0/index.web.js?module").then(m => m.default);
         const textEncoder = new TextEncoder();
         const textDecoder = new TextDecoder('utf-8');
-
-
 
         document.getElementById("share-config").addEventListener("click", async () => {
 
@@ -324,43 +332,38 @@
             }
 
             const config = editor.getValue();
+
             const compressed = await brotli.compress(textEncoder.encode(config));
             const base64String = btoa(String.fromCharCode(...compressed));
+
             const baseUrl = window.location.origin + window.location.pathname;
             const url = `${baseUrl}?c=${base64String}`;
-
 
             if (navigator.clipboard && navigator.clipboard.writeText) {
                 navigator.clipboard.writeText(url).then(() => {
                     alert("Shareable link copied to clipboard!");
                 }).catch((err) => {
                     console.error("Failed to copy link: ", err);
-
                     output.dataset.status = "warn";
                     output.innerText = "Could not copy to clipboard. Here's the link:\n" + url;
                 });
-            } else {
 
+            } else {
                 output.dataset.status = "warn";
                 output.innerText = "Clipboard API not supported. Here's the link:\n" + url;
             }
         });
 
-
         function uint8ArrayToBase64(uint8Array) {
             return btoa(String.fromCharCode(...uint8Array));
         }
 
-
-
         const urlParams = new URLSearchParams(window.location.search);
         let encodedConfig = urlParams.get('c');
-
 
         function setDefaultConfigValue() {
             editor.setValue(`{}`);
         }
-
 
         function decodeAndLoadConfig(encodedConfig) {
             try {
@@ -370,9 +373,11 @@
                     const binaryString = atob(base64String);
                     const len = binaryString.length;
                     const bytes = new Uint8Array(len);
+
                     for (let i = 0; i < len; i++) {
                         bytes[i] = binaryString.charCodeAt(i);
                     }
+
                     return bytes;
                 };
 
@@ -396,6 +401,24 @@
         }
 
 
+        const themeToggle = document.getElementById("theme-toggle");
+
+        themeToggle.addEventListener("click", () => {
+            currentTheme = (currentTheme === 'vs-light') ? 'vs-dark' : 'vs-light';
+
+            updateEditorAndPageTheme();
+
+
+            const icon = themeToggle.querySelector('i');
+
+            if (currentTheme === 'vs-light') {
+                icon.classList.remove('fa-sun');
+                icon.classList.add('fa-adjust');
+            } else {
+                icon.classList.remove('fa-adjust');
+                icon.classList.add('fa-sun');
+            }
+        });
 
         isReady.then(() => {
             editor.onDidChangeModelContent(validateConfig);
@@ -404,11 +427,11 @@
 
             if (encodedConfig) {
                 decodeAndLoadConfig(encodedConfig);
+
             } else {
                 setDefaultConfigValue();
             }
         });
-
 
     });
 </script>
