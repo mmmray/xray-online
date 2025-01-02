@@ -6,20 +6,7 @@
     <title>Xray Config Validator</title>
 
     <script src="wasm_exec.js"></script>
-    <script>
-        const isReady = new Promise((resolve) => {
-            window.onWasmInitialized = resolve;
-        });
 
-        const go = new Go();
-
-        (async () => {
-            const result = await WebAssembly.instantiateStreaming(fetch('main.wasm'), go.importObject);
-            go.run(result.instance);
-            await isReady;
-            document.getElementById("version-info").innerText = `Xray version ${XrayGetVersion()}`;
-        })();
-    </script>
     <style>
         * {
             box-sizing: border-box;
@@ -131,6 +118,19 @@
         }
 
         @media (prefers-color-scheme: dark) {
+            body {
+                background-color: #121212;
+                color: #ffffff;
+            }
+
+            #editor {
+                border: 1px solid #555;
+            }
+
+            #output {
+                border: 1px solid #555;
+            }
+
             button {
                 background-color: #333;
                 border: 1px solid #555;
@@ -144,30 +144,51 @@
             button:active {
                 background-color: #555;
             }
-
-            body {
-                background-color: #121212;
-                color: #ffffff;
-            }
-
-            #editor {
-                border: 1px solid #555;
-            }
-
-            #output {
-                border: 1px solid #555;
-            }
         }
 
+        #loading-indicator {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
 
+        #loading-spinner {
+            border: 8px solid #f3f3f3;
+            border-top: 8px solid #3498db;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 2s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
     </style>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.33.0/min/vs/loader.min.js"></script>
-</head>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.0/min/vs/loader.min.js"></script>
+</head>
 <body>
+
+<div id="loading-indicator">
+    <div id="loading-spinner"></div>
+</div>
+
 <div class="container">
     <nav id="nav">
-        <span id="version-info">Loading Xray&hellip;</span> |
+        <span id="version-info">Loading Xray…</span> |
         <a href="https://github.com/mmmray/xray-online">GitHub</a>
         <h1>Xray Config Validator</h1>
     </nav>
@@ -182,10 +203,34 @@
 </div>
 
 <script>
+    const go = new Go();
+    const isReady = new Promise((resolve) => {
+        window.onWasmInitialized = resolve;
+    });
+
+    const output = document.getElementById("output");
+
+
+    (async () => {
+        try {
+            const result = await WebAssembly.instantiateStreaming(fetch('main.wasm'), go.importObject);
+            go.run(result.instance);
+            await isReady;
+            document.getElementById("version-info").innerText = `Xray version ${XrayGetVersion()}`;
+        } catch (error) {
+            console.error("Error loading WASM:", error);
+            document.getElementById("version-info").innerText = "Error loading Xray. Check the browser console.";
+            output.dataset.status = "error";
+            output.innerText = "Error loading Xray. Check the browser console.";
+        } finally {
+            document.getElementById("loading-indicator").style.display = "none";
+        }
+    })();
+
+
     require.config({paths: {'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.0/min/vs'}});
     require(['vs/editor/editor.main'], async function () {
         const editorElement = document.getElementById('editor');
-        const output = document.getElementById("output");
 
         function updateEditorTheme() {
             const prefersDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -193,17 +238,13 @@
             monaco.editor.setTheme(theme);
         }
 
-
         const editor = monaco.editor.create(editorElement, {
             language: 'json',
             theme: 'vs-light',
             automaticLayout: true
         });
 
-
         window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', updateEditorTheme);
-
-
         updateEditorTheme();
 
 
@@ -229,7 +270,13 @@
                     }]
                 });
             })
-            .catch(error => console.error('Scheme load error:', error));
+            .catch(error => {
+                console.error('Scheme load error:', error);
+                output.dataset.status = "error";
+                output.innerText = "Error loading schema. Check browser console.";
+            });
+
+
 
         function validateConfig() {
             const jsonText = editor.getValue();
@@ -255,110 +302,65 @@
             }
         }
 
-        editor.onDidChangeModelContent(validateConfig);
+
+
 
         window.addEventListener("resize", function () {
             editor.layout();
         });
 
+
         const brotli = await import("https://unpkg.com/brotli-wasm@3.0.0/index.web.js?module").then(m => m.default);
         const textEncoder = new TextEncoder();
         const textDecoder = new TextDecoder('utf-8');
 
+
+
         document.getElementById("share-config").addEventListener("click", async () => {
+
             if (!editor) {
                 console.error('Editor is not loaded');
                 return;
             }
+
             const config = editor.getValue();
-
-            const compressed = await compressWithBrotli(config);
-            const base64String = uint8ArrayToBase64(compressed)
-
+            const compressed = await brotli.compress(textEncoder.encode(config));
+            const base64String = btoa(String.fromCharCode(...compressed));
             const baseUrl = window.location.origin + window.location.pathname;
             const url = `${baseUrl}?c=${base64String}`;
 
-            navigator.clipboard.writeText(url).then(() => {
-                alert("Shareable link copied to clipboard!");
-            }).catch((err) => {
-                console.error("Failed to copy link: ", err);
-            });
+
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(url).then(() => {
+                    alert("Shareable link copied to clipboard!");
+                }).catch((err) => {
+                    console.error("Failed to copy link: ", err);
+
+                    output.dataset.status = "warn";
+                    output.innerText = "Could not copy to clipboard. Here's the link:\n" + url;
+                });
+            } else {
+
+                output.dataset.status = "warn";
+                output.innerText = "Clipboard API not supported. Here's the link:\n" + url;
+            }
         });
 
+
         function uint8ArrayToBase64(uint8Array) {
-            let binaryString = '';
-            for (let i = 0; i < uint8Array.length; i++) {
-                binaryString += String.fromCharCode(uint8Array[i]);
-            }
-
-            return btoa(binaryString);
+            return btoa(String.fromCharCode(...uint8Array));
         }
 
-        function compressWithBrotli(input) {
-            const uncompressedData = textEncoder.encode(input);
-            return brotli.compress(uncompressedData)
-        }
+
 
         const urlParams = new URLSearchParams(window.location.search);
         let encodedConfig = urlParams.get('c');
 
-        if (encodedConfig) {
-            decodeAndLoadConfig(encodedConfig)
-        } else {
-            setDefaultConfigValue()
-        }
 
         function setDefaultConfigValue() {
-            editor.setValue(`{
-  "inbounds": [
-    {
-      "listen": "127.0.0.1",
-      "port": 10808,
-      "protocol": "socks",
-      "settings": {
-        "udp": true
-      },
-      "sniffing": {
-        "enabled": true,
-        "destOverride": [
-          "http",
-          "tls"
-        ]
-      }
-    }
-  ],
-  "outbounds": [
-    {
-      "protocol": "vless",
-      "settings": {
-        "vnext": [
-          {
-            "address": "",
-            "port": 443,
-            "users": [
-              {
-                "id": "user",
-                "encryption": "none",
-                "flow": "xtls-rprx-vision"
-              }
-            ]
-          }
-        ]
-      },
-      "streamSettings": {
-        "network": "tcp",
-        "security": "tls",
-        "tlsSettings": {
-          "serverName": "",
-          "allowInsecure": false,
-          "fingerprint": "chrome"
+            editor.setValue(`{}`);
         }
-      },
-      "tag": "proxy"
-    }
-  ]
-}`,);
-        }
+
 
         function decodeAndLoadConfig(encodedConfig) {
             try {
@@ -379,15 +381,36 @@
                 const configText = textDecoder.decode(decompressedConfig);
 
                 editor.setValue(configText);
+
             } catch (error) {
                 console.error("Failed to decode and decompress configuration:", error);
                 output.dataset.status = "error";
-                output.innerText = "Failed to decode and load shared configuration.";
+                output.innerText = "Failed to load shared configuration. Make sure the link is valid.";
+
+                if (error instanceof DOMException && error.name === "InvalidCharacterError") {
+                    output.innerText += " Invalid Base64 encoding.";
+                } else if (error.message && error.message.startsWith("Brotli")) {
+                    output.innerText += " Brotli decompression error.";
+                }
             }
         }
 
-    });
 
+
+        isReady.then(() => {
+            editor.onDidChangeModelContent(validateConfig);
+            validateConfig();
+
+
+            if (encodedConfig) {
+                decodeAndLoadConfig(encodedConfig);
+            } else {
+                setDefaultConfigValue();
+            }
+        });
+
+
+    });
 </script>
 
 </body>
